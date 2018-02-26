@@ -5,4 +5,29 @@ date:   2018-02-25 20:09:02 +0100
 categories: fourier
 ---
 
-Like most programmers, my first step into signal processing was to finally figure out what the fourier transform actually did. 
+$$ \newcommand{\Reals}[]{\mathbb{R}} $$
+
+# Motivation: adding an octave to a sphere
+
+Like many people I first got into working with the Fourier transform when learning to work with music. It was neat how you could take a signal, find out what notes it consisted of and then adjust the signal to your liking. You could add an octave on top of the most important note, for example, by just adding another frequency in the Fourier domain.
+
+Really, a musical signal is only just a function of time, or, in just a little more technical terms, a mapping \\(\Reals \to \Reals \\). However, there is no reason why we should limit ourselves to only such functions. What about mappings of the form \\( \Reals^n \to \Reals \\), or \\( \Reals^n \to \Reals^m \\)?
+
+This opens up a whole new world of interesting transformations. For example, grayscale pictures can be Fourier-transformed by viewing them as a function mapping x- and y-coordinates onto a pixel-value between zero and 255. This is one example of a mapping of the form \\( \Reals^2 \to [0, 255] \\).
+
+Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the spere:
+
+$$ x = r \cos \theta \sin \phi $$
+
+$$ y = r \sin \theta \sin \phi $$
+
+$$ z = r \cos \theta $$
+
+That means we can express a sphere as a vector-valued function of the form \\( \Reals \times [0, 2 \pi]^2 \to \Reals^3 \\).
+
+What I initially found fascinating about the Fourier transform was how you could modify musical signals. Now that we have learned that you can just as well apply Fourier to geometrical objects, let's find out what it means to modify them in the Fourier domain! Is there such a thing as "adding an octave to a spere"? If so, what would the spere look like?
+
+
+# A little bit of theory
+
+# Transforming and modifying a sphere

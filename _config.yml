@@ -16,7 +16,7 @@
 title: Code and Colors
 email: michael_langbein@hotmail.de
 description: >- # this means to ignore newlines until "baseurl:
-  This is my blog where I post about all kinds of sideprojects.
+  This is my blog where I post about all kinds of side projects.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  MichaelLangbein
