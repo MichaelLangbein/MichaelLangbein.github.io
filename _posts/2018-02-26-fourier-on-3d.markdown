@@ -6,14 +6,15 @@ categories: fourier
 ---
 
 $$ \newcommand{\Reals}[]{\mathbb{R}} $$
+$$ \newcommand{\Naturals}[]{\mathbb{N}} $$
 
 # Motivation: adding an octave to a sphere
 
-Like many people I first got into working with the Fourier transform when learning to work with music. It was neat how you could take a signal, find out what notes it consisted of and then adjust the signal to your liking. You could add an octave on top of the most important note, for example, by just adding another frequency in the Fourier domain.
+Like many people I first got into working with the Fourier transform when learning to work with music. It was neat how you could take a signal, find out what notes it consisted of and then adjust the signal to your liking by doing simple operations in the Fourier domain. For example you could add an octave on top of the most important note by just adding another frequency to the signal.
 
-Really, a musical signal is only just a function of time, or, in just a little more technical terms, a mapping \\(\Reals \to \Reals \\). However, there is no reason why we should limit ourselves to only such functions. What about mappings of the form \\( \Reals^n \to \Reals \\), or \\( \Reals^n \to \Reals^m \\)?
+Really, a musical signal is only just a function of time, or, in more technical terms, a mapping \\(\Reals \to \Reals \\). However, there is no reason why we should limit ourselves to only such functions. What about mappings of the form \\( \Reals^n \to \Reals \\), or \\( \Reals^n \to \Reals^m \\)?
 
-This opens up a whole new world of interesting transformations. For example, grayscale pictures can be Fourier-transformed by viewing them as a function mapping x- and y-coordinates onto a pixel-value between zero and 255. This is one example of a mapping of the form \\( \Reals^2 \to [0, 255] \\).
+This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. This is one example of a mapping of the form \\( \Naturals^2 \to [0, 255] \\).
 
 Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the spere:
 
