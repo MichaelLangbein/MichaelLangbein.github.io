@@ -6,6 +6,7 @@ categories: fourier
 ---
 
 $$ \newcommand{\Reals}[]{\mathbb{R}} $$
+
 $$ \newcommand{\Naturals}[]{\mathbb{N}} $$
 
 # Motivation: adding an octave to a sphere
