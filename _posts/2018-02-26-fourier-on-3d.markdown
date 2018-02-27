@@ -32,4 +32,13 @@ What I initially found fascinating about the Fourier transform was how you could
 
 # A little bit of theory
 
+Let's first consider the one-dimensional case. There is an infinite amount of Fourier base-functions of the form 
+
+$$ f_n(x) = ... $$
+
+These base-functions form a base for the vector-space of sqare-integrable, periodic functions \\( \Reals \to \Reals \\). 
+The sphere, however, is one function in the space of functions mapping \\( \Reals^3 \to \Reals^3 \\). This space, too, has a Fourier base, and that base consists of functions of the form 
+
+$$ f_n(x) = ... $$
+
 # Transforming and modifying a sphere
