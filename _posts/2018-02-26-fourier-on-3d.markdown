@@ -6,7 +6,7 @@ categories: fourier
 ---
 $$ \newcommand{\Reals}[]{\mathbb{R}} $$
 $$ \newcommand{\Naturals}[]{\mathbb{N}} $$
-# Motivation: adding an octave to an ellipsoid
+# Motivation
 
 Like many people I first got into working with the Fourier transform when learning to work with music. It was neat how you could take a signal, find out what notes it consisted of and then adjust the signal to your liking by doing simple operations in the Fourier domain. For example you could add an octave on top of the most important note by just adding another frequency to the signal.
 
