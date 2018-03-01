@@ -6,7 +6,7 @@ categories: fourier
 ---
 $$ \newcommand{\Reals}[]{\mathbb{R}} $$
 $$ \newcommand{\Naturals}[]{\mathbb{N}} $$
-# Motivation: adding an octave to an ellipse
+# Motivation: adding an octave to an ellipsoid
 
 Like many people I first got into working with the Fourier transform when learning to work with music. It was neat how you could take a signal, find out what notes it consisted of and then adjust the signal to your liking by doing simple operations in the Fourier domain. For example you could add an octave on top of the most important note by just adding another frequency to the signal.
 
@@ -14,7 +14,7 @@ Really, a musical signal is only just a function of time, or, in more technical 
 
 This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. This kind of function can be represented in the frequency domain.
 
-Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipse $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form: 
+Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipsoid $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form: 
 
 
 $$
@@ -31,7 +31,7 @@ r_3 \cos \theta
 \end{bmatrix}
 $$
 
-Here, the radii $ r_1, r_2, r_3 $ are constants, and the parameters $ \theta, \phi $ vary between $ 0 $ and $ 2 \pi $.That means we can express an ellipse as a vector-valued function of the form $ [0, 2 \pi]^2 \to \Reals^3 $. Again, this function can be projected into the frequency domain.
+Here, we'll keep the radii $ r_1, r_2, r_3 $ as constants, and let the parameters $ \theta, \phi $ vary between $ 0 $ and $ 2 \pi $.That means we can express an ellipsoid as a vector-valued function of the form $ [0, 2 \pi]^2 \to \Reals^3 $. Again, this function can be projected into the frequency domain.
 
 What I initially found fascinating about the Fourier transform was how you could modify musical signals. Now that we have learned that you can just as well apply the Fourier transformation to geometrical objects, let's find out what it means to modify them in the Fourier domain! Is there such a thing as "adding an octave to a spere"? If so, what would the spere look like?
 
@@ -66,24 +66,26 @@ Here is a plot of some of these base functions.
 
 ...
 
-The next interesting case is the space of signals $\\{ \vec{s}_{x, y} \| ... \\}$. Here, we can use the base vectors
+The next interesting case is the space of signals $\\{ \vec{s}_{x, y} \| ... \\}$. In the example of the grayscale-image from earlier, we mapped coordinates $x, y$ to a grayscale-value. Here, we can use the base vectors
 
 $$ ... $$
 
 The frequency associated with ....
-Finally, 
+Finally, lets revisit the example of the ellipsoid-function from the introduction. Contrary to the case of the grayscale image, where we mapped coordinates to a value, now we'll map parameters to coordinates. Consequently, our base will consist of functions mapping .... . 
+
+This may be confusing in a way: both in the case of the grayscale image and in the case of the ellipsoid our Fourier amplitudes have only two dimensions! How is this possible when an image is clearly two-dimensional, whereas an ellipsoid has three dimensions? Well, what determines the dimensionality of the Fourier amplitudes is the *domain* of the function, not its range. It just so happend that the ellipsoid can be parameterized with two parameters, but there are other geometric objects that require less, or more, parameters. These functions, however, would make out part of different vector spaces and as such have their own Fourier bases.  
 
 
 # Working with the Fourier transform of geometrical objects
 
-Now that we have some understanding of what we're doing, it's time to get out hands dirty. We'll transform an ellipse into the frequency domain, play around with the frequencies a bit, and transform it back to see what effect our meddling has had. 
+Now that we have some understanding of what we're doing, it's time to get out hands dirty. We'll transform an ellipsoid into the frequency domain, play around with the frequencies a bit, and transform it back to see what effect our meddling has had. 
 
 
 
 ```python
 import numpy as np
 
-def ellipse(theta, phi, r1, r2, r3):
+def ellipsoid(theta, phi, r1, r2, r3):
     x = r1 * np.cos(theta) * np.cos(phi)
     y = r2 * np.cos(theta) * np.sin(phi)
     z = r3 * np.sin(theta)
@@ -94,6 +96,6 @@ r1 = r2 = r3 = 1
 signal = np.zeros((360, 360, 3), dtype=np.float)
 for theta in np.arange(0, 360):
     for phi in np.arange(0, 360):
-    	data[theta, phi] = ellipse(theta, phi, r1, r2, r3)
+    	signal[theta, phi] = ellipsoid(theta, phi, r1, r2, r3)
 
 ```
