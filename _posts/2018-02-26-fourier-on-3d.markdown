@@ -73,7 +73,7 @@ $$ ... $$
 The frequency associated with ....
 Finally, lets revisit the example of the ellipsoid-function from the introduction. Contrary to the case of the grayscale image, where we mapped coordinates to a value, now we'll map parameters to coordinates. Consequently, our base will consist of functions mapping .... . 
 
-This may be confusing in a way: both in the case of the grayscale image and in the case of the ellipsoid our Fourier amplitudes have only two dimensions! How is this possible when an image is clearly two-dimensional, whereas an ellipsoid has three dimensions? Well, what determines the dimensionality of the Fourier amplitudes is the *domain* of the function, not its range. It just so happend that the ellipsoid can be parameterized with two parameters, but there are other geometric objects that require less, or more, parameters. These functions, however, would make out part of different vector spaces and as such have their own Fourier bases.  
+This may be confusing in a way: both in the case of the grayscale image and in the case of the ellipsoid our Fourier amplitudes have only two dimensions! How is this possible when an image is clearly two-dimensional, whereas an ellipsoid has three dimensions? Well, what determines the dimensionality of the Fourier amplitudes is the *domain* of the function, not its range. In the case of the image, the x- and y-coordinates are important for the dimensionality of the amplitudes, not the grayscale-value. In the case of the ellipsoid, the parameters $\theta$ and $\phi$ matter for the dimensionality of the amplitudes, not the coordinates that the ellipsoid-function yields. It just so happend that the ellipsoid can be parameterized with two parameters, but there are other geometric objects that require less, or more, parameters. These functions, however, would make out part of different vector spaces and as such have their own Fourier bases.  
 
 
 # Working with the Fourier transform of geometrical objects
@@ -99,3 +99,7 @@ for theta in np.arange(0, 360):
     	signal[theta, phi] = ellipsoid(theta, phi, r1, r2, r3)
 
 ```
+
+
+
+
