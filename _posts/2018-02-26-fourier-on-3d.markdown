@@ -14,7 +14,7 @@ Really, a musical signal is only just a function of time, or, in more technical 
 
 This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. This kind of function can be represented in the frequency domain.
 
-Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipsoid $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form: 
+Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipsoid $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form:
 
 
 $$
@@ -71,14 +71,14 @@ The next interesting case is the space of signals $\\{ \vec{s}_{x, y} \| ... \\}
 $$ ... $$
 
 The frequency associated with ....
-Finally, lets revisit the example of the ellipsoid-function from the introduction. Contrary to the case of the grayscale image, where we mapped coordinates to a value, now we'll map parameters to coordinates. Consequently, our base will consist of functions mapping .... . 
+Finally, lets revisit the example of the ellipsoid-function from the introduction. Contrary to the case of the grayscale image, where we mapped coordinates to a value, now we'll map parameters to coordinates. Consequently, our base will consist of functions mapping .... .
 
 This may be confusing in a way: both in the case of the grayscale image and in the case of the ellipsoid our Fourier amplitudes have only two dimensions! How is this possible when an image is clearly two-dimensional, whereas an ellipsoid has three dimensions? Well, what determines the dimensionality of the Fourier amplitudes is the *domain* of the function, not its range. In the case of the image, the x- and y-coordinates are important for the dimensionality of the amplitudes, not the grayscale-value. In the case of the ellipsoid, the parameters $\theta$ and $\phi$ matter for the dimensionality of the amplitudes, not the coordinates that the ellipsoid-function yields. It just so happend that the ellipsoid can be parameterized with two parameters, but there are other geometric objects that require less, or more, parameters. These functions, however, would make out part of different vector spaces and as such have their own Fourier bases.  
 
 
 # Working with the Fourier transform of geometrical objects
 
-Now that we have some understanding of what we're doing, it's time to get out hands dirty. We'll transform an ellipsoid into the frequency domain, play around with the frequencies a bit, and transform it back to see what effect our meddling has had. 
+Now that we have some understanding of what we're doing, it's time to get out hands dirty. We'll transform an ellipsoid into the frequency domain, play around with the frequencies a bit, and transform it back to see what effect our meddling has had.
 
 
 
@@ -101,5 +101,5 @@ for theta in np.arange(0, 360):
 ```
 
 
-
-
+# Conclusion
+This was inspiring! In the process of writing this post, I had ideas for several little games to play around with multidimensional Fourier transforms. One that I'll soon put on github goes like this: split a screen in two panes. The left one is a flat surface, on which the user can draw. This surface represents the Fourier amplitudes. With every frame, the drawn amplitudes get transformed back into a tree-dimensional object, which will be displayed on the right pane. Link soon to follow! 
