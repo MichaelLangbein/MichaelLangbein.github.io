@@ -12,9 +12,7 @@ Like many people I first got into working with the Fourier transform when learni
 
 Really, a musical signal is only just a function of time, or, in more technical terms, a mapping $\Reals \to \Reals $. However, there is no reason why we should limit ourselves to only such functions. What about mappings of the form $ \Reals^n \to \Reals $, or $ \Reals^n \to \Reals^m $? It turns out that there is a way to decompose these functions into frequencies as well!
 
-This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. This kind of function can be represented in the frequency domain.
-
-Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipsoid $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form:
+This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipsoid $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form:
 
 
 $$
@@ -31,7 +29,7 @@ r_3 \cos \theta
 \end{bmatrix}
 $$
 
-Here, we'll keep the radii $ r_1, r_2, r_3 $ as constants, and let the parameters $ \theta, \phi $ vary between $ 0 $ and $ 2 \pi $.That means we can express an ellipsoid as a vector-valued function of the form $ [0, 2 \pi]^2 \to \Reals^3 $. Again, this function can be projected into the frequency domain.
+Here, we'll keep the radii $ r_1, r_2, r_3 $ as constants, and let the parameters $ \theta, \phi $ vary between $ 0 $ and $ 2 \pi $.That means we can express an ellipsoid as a vector-valued function of the form $ [0, 2 \pi]^2 \to \Reals^3 $. All these functions can be projected into the frequency domain.
 
 What I initially found fascinating about the Fourier transform was how you could modify musical signals. Now that we have learned that you can just as well apply the Fourier transformation to geometrical objects, let's find out what it means to modify them in the Fourier domain! Is there such a thing as "adding an octave to a spere"? If so, what would the spere look like?
 
@@ -50,7 +48,7 @@ Since $B_S$ is orthogonal, the coefficients $\alpha_n$ are easy to obtain:
 
 $$ \alpha_n = < \vec{s}, \vec{b_n} > $$
 
-All this holds for any orthogonal base. Then how is a Fourier base special? Really, there isn't all that much special about the Fourier base, except that the coefficients $\alpha_n$ have a neat interpretation: they are the amplitdudes of a wave with frequency $f_n$. Chosing to represent a signal by it's Fourier coefficients is just like chosing to ............
+All this holds for any orthogonal base. Then how is a Fourier base special? Really, there isn't all that much special about the Fourier base, except that the coefficients $\alpha_n$ have a neat interpretation: they are the amplitudes of a wave with frequency $f_n$. Choosing to represent a signal by it's Fourier coefficients is just like choosing to ............
 
 ### Different Fourier bases for different spaces
 
@@ -102,4 +100,4 @@ for theta in np.arange(0, 360):
 
 
 # Conclusion
-This was inspiring! In the process of writing this post, I had ideas for several little games to play around with multidimensional Fourier transforms. One that I'll soon put on github goes like this: split a screen in two panes. The left one is a flat surface, on which the user can draw. This surface represents the Fourier amplitudes. With every frame, the drawn amplitudes get transformed back into a tree-dimensional object, which will be displayed on the right pane. Link soon to follow! 
+This was inspiring! In the process of writing this post, I had ideas for several little games to play around with multidimensional Fourier transforms. One that I'll soon put on github goes like this: split a screen in two panes. The left one is a flat surface, on which the user can draw. This surface represents the Fourier amplitudes. With every frame, the drawn amplitudes get transformed back into a tree-dimensional object, which will be displayed on the right pane. Link soon to follow!
