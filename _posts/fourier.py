@@ -1,4 +1,4 @@
-from numpy import zeros, exp, pi, complex128, shape, fft, abs, sin, cos, arange, log
+from numpy import zeros, exp, pi, complex128, shape, fft, abs, sin, cos, arange, log, linspace
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -31,10 +31,10 @@ def myfourierTransformInverse(amps):
 
 
 def fourierTransform(signal):
-    return fft.fft2(signal)
+    return fft.rfft2(signal)
 
 def fourierTransformInverse(amps):
-    return fft.ifft2(amps)
+    return fft.irfft2(amps)
 
 
 def getMax(mtrx):
@@ -47,39 +47,49 @@ def getMax(mtrx):
     return mx
 
 
-def filterBy(dataIn, filterFunc):
-    N, M = shape(signal)
+def matixFilter(dataIn, filterFunc):
+    N, M = shape(dataIn)
     dataOut = zeros((N, M), dtype=complex128)
     for n in range(N):
         for m in range(M):
-            if filterFunc(dataIn[n][m]):
+            if filterFunc(n, m, dataIn[n][m]):
                 dataOut[n][m] = dataIn[n][m]
     return dataOut
 
+def matrixMap(matrx, mapFunc):
+    N, M = shape(matrx)
+    for n in range(N):
+        for m in range(M):
+            matrx[n][m] = mapFunc(n, m, matrx[n][m])
+    return matrx
+
 
 def ellipsoid(theta, phi):
-    br1 = cos(theta)**2.0 * sin(phi)**2.0 / rx**2.0
-    br2 = sin(theta)**2.0 * sin(phi)**2.0 / ry**2.0
-    br3 = cos(phi)**2.0 / rz**2.0
-    r = (1.0 / (br1 + br2 + br3) )**(0.5)
+    theta2 = theta + pi/2.0
+    x = rx * cos(theta2) * cos(phi)
+    y = ry * cos(theta2) * sin(phi)
+    z = rz * sin(theta2)
+    r = (x**2 + y**2 + z**2)**(0.5)
     return r
             
     
 
 # Step 0: constants
-rx = 2
-ry = 3
+rx = 1
+ry = 2
 rz = 1
-spacing = 0.2
+N = 50
+M = 100
 
 # Step 1: create data
 print "Creating data"
-signal = []
-for theta in arange(0.0, 2.0*pi, spacing):
-    row = []
-    for phi in arange(0.0, 2.0*pi, spacing):
-        row.append( ellipsoid(theta, phi) )
-    signal.append(row)
+thetas = linspace(0, pi, N)
+phis = linspace(0, 2*pi, M)
+signal = zeros((N, M))
+for n,theta in enumerate(thetas):
+    for m, phi in enumerate(phis):
+        signal[n][m] = ellipsoid(theta, phi)
+
 
 
 # Step 2: transform
@@ -89,10 +99,12 @@ amps = fourierTransform(signal)
 
 # Step 3: manipulate
 print "Manipulating data"
-thrsh = getMax(amps) * 0
+thrsh = getMax(amps) * -0.5
 amps[0][0] = 0
-ampsNew = filterBy(amps, lambda val : val > thrsh)
-
+#ampsNew = matixFilter(amps, lambda n, m, val : val > thrsh)
+#ampsNew = matixFilter(amps, lambda n, m, val : (n - N/2)**2 + (m - M/4)**2 < 30 )
+ampsNew = matixFilter(amps, lambda n, m, val : -30 < (n - N/2) - (m - M/4) < 30 )
+#ampsNew = matrixMap(amps, lambda n, m, val : 4 * val)
 
 # Step 4: backtransform
 print "Backtransform"
@@ -106,24 +118,22 @@ signalNew = fourierTransformInverse(ampsNew)
 # Step 5: plot
 
 def sphericalToCart(theta, phi, r):
-    x = r * sin(phi) * cos(theta)
-    y = r * sin(phi) * sin(theta)
-    z = r  * cos(phi)
+    x = r * sin(theta) * cos(phi)
+    y = r * sin(theta) * sin(phi)
+    z = r * cos(theta)
     return [x, y, z]
 
 
 def signalToCart(sig):
     N, M = shape(sig)
-    signalCart = []
-    for n in range(N):
-        row = []
-        for m in range(M):
-            theta = spacing * n
-            phi = spacing * m
+    signalCart = zeros((N * M, 3))
+    i = 0
+    for n,theta in enumerate(thetas):
+        for m, phi in enumerate(phis):
             r = sig[n][m]
             cartCords = sphericalToCart(theta, phi, r)
-            row.append(cartCords)
-        signalCart.append(row)
+            signalCart[i] = cartCords
+            i += 1
     return signalCart
 
 signalC = signalToCart(signal)
@@ -134,8 +144,7 @@ fig = plt.figure()
 
 ax1 = fig.add_subplot(231, projection='3d')
 ax1.set_title("Original body")
-for point in signalC:
-    ax1.scatter(point[0], point[1], point[2])
+ax1.scatter(signalC[:, 0], signalC[:, 1], signalC[:, 2], cmap="viridis")
 
 ax2 = fig.add_subplot(232)
 ax2.set_title("Flattened")
@@ -147,8 +156,7 @@ ax3.imshow(log(abs(amps)))
 
 ax4 = fig.add_subplot(234, projection='3d')
 ax4.set_title("New body")
-for point in signalNewC:
-    ax4.scatter(point[0], point[1], point[2])
+ax4.scatter(signalNewC[:, 0], signalNewC[:, 1], signalNewC[:, 2], cmap="viridis")
 
 ax5 = fig.add_subplot(235)
 ax5.set_title("Flattened")
