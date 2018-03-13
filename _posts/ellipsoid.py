@@ -4,27 +4,26 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def ellipsoid(theta, phi):
-    theta2 = theta + pi/2.0
-    x = rx * cos(theta2) * cos(phi)
-    y = ry * cos(theta2) * sin(phi)
-    z = rz * sin(theta2)
-    r = sqrt(x**2 + y**2 + z**2)
-    return x, y, z, r
+    bx = cos(pi/2.0 - theta) * cos(phi) / rx
+    by = cos(pi/2.0 - theta) * sin(phi) / ry
+    bz = cos(theta) / rz
+    r = sqrt( 1.0 / ( bx**2.0 + by**2.0 + bz**2.0 ) )
+    return  r
 
 
 def sphericalToCart(theta, phi, r):
-    x = r * sin(theta) * cos(phi)
-    y = r * sin(theta) * sin(phi)
+    x = r * cos(pi/2.0 - theta) * cos(phi)
+    y = r * cos(pi/2.0 - theta) * sin(phi)
     z = r * cos(theta)
-    return [x, y, z]
+    return x, y, z
 
 
 spacing = 0.1
 rx = 1
 ry = 2
 rz = 3
-N = 50
-M = 100
+N = 20
+M = 2*N
 
 
 thetas = linspace(0, pi, N)
@@ -35,11 +34,13 @@ signalD = zeros((N * M, 3))
 i = 0
 for n, theta in enumerate(thetas):
     for m, phi in enumerate(phis):
-        x, y, z, r = ellipsoid(theta, phi)
+        r = ellipsoid(theta, phi)
+        x, y, z = sphericalToCart(theta, phi, r)
         signal[n][m] = r
-        signalC[i] = [x, y, z]
-        signalD[i] = sphericalToCart(theta, phi, r)
+        signalD[i] = [x, y, z]
         i += 1
+        rcalc = sqrt(x**2 + y**2 + z**2 )
+        print " r : {}  \n rc: {}".format(r, rcalc)
 
 
 
@@ -48,7 +49,6 @@ for n, theta in enumerate(thetas):
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection="3d")
-ax.scatter(signalC[:, 0], signalC[:, 1], signalC[:, 2], color="blue")
 ax.scatter(signalD[:, 0], signalD[:, 1], signalD[:, 2], color="red")
 ax.set_xlabel("x")
 ax.set_xlabel("y")

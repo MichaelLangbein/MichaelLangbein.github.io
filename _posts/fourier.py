@@ -1,4 +1,4 @@
-from numpy import zeros, exp, pi, complex128, shape, fft, abs, sin, cos, arange, log, linspace
+from numpy import zeros, exp, pi, complex128, shape, fft, abs, sin, cos, arange, log, linspace, sqrt
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -56,30 +56,47 @@ def matixFilter(dataIn, filterFunc):
                 dataOut[n][m] = dataIn[n][m]
     return dataOut
 
-def matrixMap(matrx, mapFunc):
-    N, M = shape(matrx)
+def matrixMap(matrix, mapFunc):
+    N, M = shape(matrix)
+    matrixNew = zeros((N, M), dtype=matrix.dtype)
     for n in range(N):
         for m in range(M):
-            matrx[n][m] = mapFunc(n, m, matrx[n][m])
-    return matrx
+            matrixNew[n][m] = mapFunc(n, m, matrix[n][m])
+    return matrixNew
 
 
 def ellipsoid(theta, phi):
-    theta2 = theta + pi/2.0
-    x = rx * cos(theta2) * cos(phi)
-    y = ry * cos(theta2) * sin(phi)
-    z = rz * sin(theta2)
-    r = (x**2 + y**2 + z**2)**(0.5)
-    return r
+    bx = cos(pi/2.0 - theta) * cos(phi) / rx
+    by = cos(pi/2.0 - theta) * sin(phi) / ry
+    bz = cos(theta) / rz
+    r = sqrt( 1.0 / ( bx**2.0 + by**2.0 + bz**2.0 ) )
+    return  r
+
+
+def sphericalToCart(theta, phi, r):
+    x = r * cos(pi/2.0 - theta) * cos(phi)
+    y = r * cos(pi/2.0 - theta) * sin(phi)
+    z = r * cos(theta)
+    return x, y, z
             
-    
+def signalToCart(sig):
+    N, M = shape(sig)
+    signalCart = zeros((N * M, 3))
+    i = 0
+    for n,theta in enumerate(thetas):
+        for m, phi in enumerate(phis):
+            r = sig[n][m]
+            cartCords = sphericalToCart(theta, phi, r)
+            signalCart[i] = cartCords
+            i += 1
+    return signalCart  
 
 # Step 0: constants
 rx = 1
 ry = 2
-rz = 1
+rz = 3
 N = 50
-M = 100
+M = 2*N
 
 # Step 1: create data
 print "Creating data"
@@ -99,12 +116,13 @@ amps = fourierTransform(signal)
 
 # Step 3: manipulate
 print "Manipulating data"
-thrsh = getMax(amps) * -0.5
+thrsh = getMax(amps) * 0.0
 amps[0][0] = 0
 #ampsNew = matixFilter(amps, lambda n, m, val : val > thrsh)
-#ampsNew = matixFilter(amps, lambda n, m, val : (n - N/2)**2 + (m - M/4)**2 < 30 )
-ampsNew = matixFilter(amps, lambda n, m, val : -30 < (n - N/2) - (m - M/4) < 30 )
+#ampsNew = matixFilter(amps, lambda n, m, val : (n - N/2)**2 + (m - M/4)**2 < 3*N )
+#ampsNew = matixFilter(amps, lambda n, m, val : -30 < (n - N/2) - (m - M/4) < 30 )
 #ampsNew = matrixMap(amps, lambda n, m, val : 4 * val)
+ampsNew = matrixMap(amps, lambda n, m, val : ((n+1)%(m+1)) * val)
 
 # Step 4: backtransform
 print "Backtransform"
@@ -117,33 +135,36 @@ signalNew = fourierTransformInverse(ampsNew)
 
 # Step 5: plot
 
-def sphericalToCart(theta, phi, r):
-    x = r * sin(theta) * cos(phi)
-    y = r * sin(theta) * sin(phi)
-    z = r * cos(theta)
-    return [x, y, z]
-
-
-def signalToCart(sig):
-    N, M = shape(sig)
-    signalCart = zeros((N * M, 3))
-    i = 0
-    for n,theta in enumerate(thetas):
-        for m, phi in enumerate(phis):
-            r = sig[n][m]
-            cartCords = sphericalToCart(theta, phi, r)
-            signalCart[i] = cartCords
-            i += 1
-    return signalCart
-
 signalC = signalToCart(signal)
 signalNewC = signalToCart(signalNew)
 
 
+def on_move(event):
+    if event.inaxes == ax1:
+        if ax1.button_pressed in ax1._rotate_btn:
+            ax4.view_init(elev=ax1.elev, azim=ax1.azim)
+        elif ax1.button_pressed in ax1._zoom_btn:
+            ax4.set_xlim3d(ax1.get_xlim3d())
+            ax4.set_ylim3d(ax1.get_ylim3d())
+            ax4.set_zlim3d(ax1.get_zlim3d())
+    elif event.inaxes == ax4:
+        if ax4.button_pressed in ax4._rotate_btn:
+            ax1.view_init(elev=ax4.elev, azim=ax4.azim)
+        elif ax4.button_pressed in ax4._zoom_btn:
+            ax1.set_xlim3d(ax4.get_xlim3d())
+            ax1.set_ylim3d(ax4.get_ylim3d())
+            ax1.set_zlim3d(ax4.get_zlim3d())
+    else:
+        return
+    fig.canvas.draw_idle()
+
+
 fig = plt.figure()
+c1 = fig.canvas.mpl_connect('motion_notify_event', on_move)
 
 ax1 = fig.add_subplot(231, projection='3d')
 ax1.set_title("Original body")
+ax1.set_aspect('equal', adjustable='box')
 ax1.scatter(signalC[:, 0], signalC[:, 1], signalC[:, 2], cmap="viridis")
 
 ax2 = fig.add_subplot(232)
@@ -152,10 +173,11 @@ ax2.imshow(signal)
 
 ax3 = fig.add_subplot(233)
 ax3.set_title("Fourier Transform")
-ax3.imshow(log(abs(amps)))
+ax3.imshow(log(abs(amps)+0.0001))
 
 ax4 = fig.add_subplot(234, projection='3d')
 ax4.set_title("New body")
+ax4.set_aspect('equal', adjustable='box')
 ax4.scatter(signalNewC[:, 0], signalNewC[:, 1], signalNewC[:, 2], cmap="viridis")
 
 ax5 = fig.add_subplot(235)
@@ -164,6 +186,6 @@ ax5.imshow(abs(signalNew))
 
 ax6 = fig.add_subplot(236)
 ax6.set_title("Altered amplitudes")
-ax6.imshow(log(abs(ampsNew)))
+ax6.imshow(log(abs(ampsNew)+0.0001))
 
 plt.show()
