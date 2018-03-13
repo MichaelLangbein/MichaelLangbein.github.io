@@ -69,6 +69,12 @@ This may be confusing in a way: both in the case of the grayscale image and in t
 
 Now that we have some understanding of what we're doing, it's time to get out hands dirty. We'll transform an ellipsoid into the frequency domain, play around with the frequencies a bit, and transform it back to see what effect our meddling has had.
 
+First, however, we'll need a function to describe the ellipsoid. For convenience, we'll use a spherical coordinate system. Within such a system, we can write the radius of the ellipsoid as a function of the two parameters $\theta$ (the polar angle) and $\phi$ (the azimuth angle):
+
+$$ r = 1 / \sqrt{ \frac{\cos^2( \frac{\pi}{2} - \theta) \cos^2(\phi)}{r_x^2} + \frac{\cos^2( \frac{\pi}{2} -\theta) \sin^2(\phi)}{r_y^2} + \frac{\cos^2(\theta)}{r_z^2} } $$
+
+Let's implement this:
+
 
 
 ```python
