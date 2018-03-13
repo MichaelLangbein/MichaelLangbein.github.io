@@ -78,7 +78,7 @@ def sphericalToCart(theta, phi, r):
     y = r * cos(pi/2.0 - theta) * sin(phi)
     z = r * cos(theta)
     return x, y, z
-            
+
 def signalToCart(sig):
     N, M = shape(sig)
     signalCart = zeros((N * M, 3))
@@ -89,13 +89,13 @@ def signalToCart(sig):
             cartCords = sphericalToCart(theta, phi, r)
             signalCart[i] = cartCords
             i += 1
-    return signalCart  
+    return signalCart
 
 # Step 0: constants
 rx = 1
-ry = 2
-rz = 3
-N = 50
+ry = 4
+rz = 1
+N = 30
 M = 2*N
 
 # Step 1: create data
@@ -116,13 +116,11 @@ amps = fourierTransform(signal)
 
 # Step 3: manipulate
 print "Manipulating data"
-thrsh = getMax(amps) * 0.0
-amps[0][0] = 0
-#ampsNew = matixFilter(amps, lambda n, m, val : val > thrsh)
-#ampsNew = matixFilter(amps, lambda n, m, val : (n - N/2)**2 + (m - M/4)**2 < 3*N )
-#ampsNew = matixFilter(amps, lambda n, m, val : -30 < (n - N/2) - (m - M/4) < 30 )
+#ampsNew = matixFilter(amps, lambda n, m, val : val > 0)
+#ampsNew = matixFilter(amps, lambda n, m, val : (n - N/2)**2 + (m - M/4)**2 > 5*N )
+ampsNew = matixFilter(amps, lambda n, m, val : -N/4 < (n - N/2) - (m - M/4) < N/4 )
 #ampsNew = matrixMap(amps, lambda n, m, val : 4 * val)
-ampsNew = matrixMap(amps, lambda n, m, val : ((n+1)%(m+1)) * val)
+#ampsNew = matrixMap(amps, lambda n, m, val : ((n+1)%(m+1)) * val)
 
 # Step 4: backtransform
 print "Backtransform"

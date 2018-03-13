@@ -1,13 +1,14 @@
 ---
 layout: post
-title:  "Fourier Transform on Three-Dimensional Objects"
+title:  "Fourier Transform on Three-Dimensional Objects: Part 1"
 date:   2018-02-25 20:09:02 +0100
 categories: fourier
 ---
 
-This post is still in draft stage! I'll finish it up as soon as I find some time to write again. 
+This post is still in draft stage! I'll finish it up as soon as I find some time to write again.
 
 $$ \newcommand{\Reals}[]{\mathbb{R}} $$
+$$ \newcommand{\Complexes}[]{\mathbb{C}} $$
 $$ \newcommand{\Naturals}[]{\mathbb{N}} $$
 # Motivation
 
@@ -15,24 +16,7 @@ Like many people I first got into working with the Fourier transform when learni
 
 Really, a musical signal is only just a function of time, or, in more technical terms, a mapping $\Reals \to \Reals $. However, there is no reason why we should limit ourselves to only such functions. What about mappings of the form $ \Reals^n \to \Reals $, or $ \Reals^n \to \Reals^m $? It turns out that there is a way to decompose these functions into frequencies as well!
 
-This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. Geometrical objects make for another interesting example. We can transform any geometrical object that has a parameterized equation. Consider for example the ellipsoid $ \\{ \vec{v} \| \frac{x^2}{r_1} + \frac{y^2}{r_2} + \frac{z^2}{r_3} = 1 \\} $. It has the parameterized form:
-
-
-$$
-\begin{bmatrix}
-x \\
-y \\
-z
-\end{bmatrix}
-=
-\begin{bmatrix}
-r_1 \cos \theta \sin \phi \\
-r_2 \sin \theta \sin \phi \\
-r_3 \cos \theta
-\end{bmatrix}
-$$
-
-Here, we'll keep the radii $ r_1, r_2, r_3 $ as constants, and let the parameters $ \theta, \phi $ vary between $ 0 $ and $ 2 \pi $.That means we can express an ellipsoid as a vector-valued function of the form $ [0, 2 \pi]^2 \to \Reals^3 $. All these functions can be projected into the frequency domain.
+This opens up a whole new world of interesting transformations. For example, grayscale pictures can be viewed as a function mapping x- and y-coordinates onto a pixel-value between 0 and 255. Geometrical objects make for another interesting example. In this post, we'll work with an geometrical object that can be described by an explicit function of the form $\Reals^2 \to \Reals$, the ellipsoid. But there is no reason why we could not work with any other  function from $L^2(\Complexes^n \to \Complexes)$. In the next post, we'll even go one step further and deal with vector valued functions from $L^2(\Complexes^n \to \Complexes^m)$.
 
 What I initially found fascinating about the Fourier transform was how you could modify musical signals. Now that we have learned that you can just as well apply the Fourier transformation to geometrical objects, let's find out what it means to modify them in the Fourier domain! Is there such a thing as "adding an octave to a spere"? If so, what would the spere look like?
 
@@ -51,10 +35,14 @@ Since $B_S$ is orthogonal, the coefficients $\alpha_n$ are easy to obtain:
 
 $$ \alpha_n = < \vec{s}, \vec{b_n} > $$
 
-All this holds for any orthogonal base. Then how is a Fourier base special? Really, there isn't all that much special about the Fourier base, except that the coefficients $\alpha_n$ have a neat interpretation: they are the amplitudes of a wave with frequency $f_n$. Choosing to represent a signal by it's Fourier coefficients is just like choosing to ............
+All this holds for any orthogonal base. Then how is a Fourier base special? Really, there isn't all that much special about the Fourier base, except that the coefficients $\alpha_n$ have a neat interpretation: they are the amplitudes of a wave with frequency $f_n$.
 
-### Different Fourier bases for different spaces
+The Fourier Transform is a transform on $B$ that changes the base of $B$ to a set of functions that can be viewed as sine waves. If the signal we want to represent does indeed have some wave-like properties, this representation may be a lot more concise. Choosing to represent a signal by it's Fourier coefficients is a bit like choosing to describe a piece of music by it's notesheet instead of, say, a wav file. The information content remains the same, but from the notesheet we can extract some information way more easily from a notesheet than from the raw values of the wav file. Most people will be able to get at least a vague impression of a song from it's notes, but very few will be able to read *anything* out of the long list of speaker-positions that make out a wav file.
+
+
 <!--
+### Different Fourier bases for different spaces
+
 So when we do a Fourier transformation, all we do is find out the values of the amplitudes $\alpha_n$. Now it is important to understand that for different kinds of vectors there are different kinds of Fourier bases. Usually one first gets introduced to the space of periodic signals $\\{ \vec{s}_x \| ... \\}$. In this space, the Fourier base vectors have the form:
 
 $$ ... $$
@@ -84,24 +72,99 @@ Now that we have some understanding of what we're doing, it's time to get out ha
 
 
 ```python
-import numpy as np
-
-def ellipsoid(theta, phi, r1, r2, r3):
-    x = r1 * np.cos(theta) * np.cos(phi)
-    y = r2 * np.cos(theta) * np.sin(phi)
-    z = r3 * np.sin(theta)
-    return x, y, z
+from numpy import zeros, exp, pi, complex128, shape, fft, abs, sin, cos, arange, log, linspace, sqrt
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
-r1 = r2 = r3 = 1
-signal = np.zeros((360, 360, 3), dtype=np.float)
-for theta in np.arange(0, 360):
-    for phi in np.arange(0, 360):
-    	signal[theta, phi] = ellipsoid(theta, phi, r1, r2, r3)
+def fourierTransform(signal):
+    return fft.rfft2(signal)
+
+def fourierTransformInverse(amps):
+    return fft.irfft2(amps)
+
+def matixFilter(dataIn, filterFunc):
+    N, M = shape(dataIn)
+    dataOut = zeros((N, M), dtype=complex128)
+    for n in range(N):
+        for m in range(M):
+            if filterFunc(n, m, dataIn[n][m]):
+                dataOut[n][m] = dataIn[n][m]
+    return dataOut
+
+def matrixMap(matrix, mapFunc):
+    N, M = shape(matrix)
+    matrixNew = zeros((N, M), dtype=matrix.dtype)
+    for n in range(N):
+        for m in range(M):
+            matrixNew[n][m] = mapFunc(n, m, matrix[n][m])
+    return matrixNew
+
+
+def ellipsoid(theta, phi):
+    bx = cos(pi/2.0 - theta) * cos(phi) / rx
+    by = cos(pi/2.0 - theta) * sin(phi) / ry
+    bz = cos(theta) / rz
+    r = sqrt( 1.0 / ( bx**2.0 + by**2.0 + bz**2.0 ) )
+    return  r
+
+
+# Step 0: constants
+rx = 1
+ry = 4
+rz = 1
+N = 30
+M = 2*N
+
+
+# Step 1: create data
+thetas = linspace(0, pi, N)
+phis = linspace(0, 2*pi, M)
+signal = zeros((N, M))
+for n,theta in enumerate(thetas):
+    for m, phi in enumerate(phis):
+        signal[n][m] = ellipsoid(theta, phi)
+
+
+# Step 2: transform
+amps = fourierTransform(signal)
+
+
+# Step 3: manipulate
+ampsNew = matixFilter(amps, lambda n, m, val : val > 0)
+
+
+# Step 4: backtransform
+signalNew = fourierTransformInverse(ampsNew)
 
 ```
 
-<!--
-# Conclusion
-This was inspiring! In the process of writing this post, I had ideas for several little games to play around with multidimensional Fourier transforms. One that I'll soon put on github goes like this: split a screen in two panes. The left one is a flat surface, on which the user can draw. This surface represents the Fourier amplitudes. With every frame, the drawn amplitudes get transformed back into a tree-dimensional object, which will be displayed on the right pane. Link soon to follow!
--->
+This results in a ........
+
+
+
+How about if we use this manipulation instead?
+```python
+ampsNew = matixFilter(amps, lambda n, m, val : -N/4 < (n - N/2) - (m - M/4) < N/4 )
+```
+
+
+# Conclusion ... for now
+
+So now we have seen how we may take any (square-integrable) function and play around with it in the frequency domain. But there was a little bit of cheating involved. By restricting our attention to only cases where an explicit function of the form $\Reals^n \to \Reals$, we conveniently blended out a huge amount of problematic cases, most notably, geometrical objects that cannot be written in this explicit form. In fact, even the example of the ellipsoid that we have seen here can be too complex for this simplified approach. For simplicity, we decided to express the ellipsoid inside a spherical coordinate system, which allowed us to find an explicit expression describing the ellipsoid as $r = f(\theta, \phi)$. Had we chosen a cartesian coordinate system instead, no such function would exist! We'd be dealing with a function of the form
+
+$$
+\begin{bmatrix}
+x \\
+y \\
+z
+\end{bmatrix}
+=
+\begin{bmatrix}
+r_1 \cos \theta \sin \phi \\
+r_2 \sin \theta \sin \phi \\
+r_3 \cos \theta
+\end{bmatrix}
+$$
+
+That is, we'd be dealing with vector valued functions. When you want to work with arbitrary geometric objects, you'll probably come across this case way more often than the few instances where you can find a nice, explicit function. So in the next post of this series, we'll deal with that case! Stay tuned!
