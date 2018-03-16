@@ -13,8 +13,11 @@ $$ \newcommand{\Naturals}[]{\mathbb{N}} $$
 $$ \newcommand{\Geom}[]{\mathbb{G}} $$
 
 
-Lets consider vector valued functions. There are three ways we can do Fourier transforms on them
+Lets consider vector valued functions. For example, the ellipsoid $\vec{x} = f(\theta, \phi)$ or a color image $\vec{x} = f(x, y)$.
+
+There are three ways we can do Fourier transforms on them
 
  - consider each dimension separately: do a Fourier transform on x, one on y, and one on z
  - make a vectorspace of vectorfields. In the case of ellipsoid, that would be a vectorspace consisting of functions $\Reals^2 \to \Complex^3$. Still have to make up a suitable Fourier base, though.
+ - express the values of the vectorfield with quaternions and do a quaternion fft. 
  - express the ellipsoid in the conformal model of geometric algebra. Thus we deals with a vectorspace of $\Reals^2 \to \Geom$. This is a simple one dimensional transform.
