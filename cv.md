@@ -19,4 +19,4 @@ categories: cv
 
   - 2017 - 2018 *Soundboard: A Sound-Visualization and Real-Time Editing Tool for Android*
   - 2014 *Master thesis: Uncertainty Estimation of the Probability Distributed Model in Flanders using Markov-Chain Monte Carlo Methods*
-  - 2012 - 2014 *Executive and Webmaster for UGent1010 (NGO for sustainability at the University of Ghent)*
+  - 2012 - 2014 *Webmaster for UGent1010 (NGO for sustainability at the University of Ghent)*
