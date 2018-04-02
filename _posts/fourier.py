@@ -92,10 +92,10 @@ def signalToCart(sig):
     return signalCart
 
 # Step 0: constants
-rx = 1
-ry = 4
-rz = 1
-N = 30
+rx = 2
+ry = 1
+rz = 5
+N = 100
 M = 2*N
 
 # Step 1: create data
@@ -118,9 +118,9 @@ amps = fourierTransform(signal)
 print "Manipulating data"
 #ampsNew = matixFilter(amps, lambda n, m, val : val > 0)
 #ampsNew = matixFilter(amps, lambda n, m, val : (n - N/2)**2 + (m - M/4)**2 > 5*N )
-ampsNew = matixFilter(amps, lambda n, m, val : -N/4 < (n - N/2) - (m - M/4) < N/4 )
+#ampsNew = matixFilter(amps, lambda n, m, val : -N/8 < (n - N/2) - (m - M/4) < N/8 )
 #ampsNew = matrixMap(amps, lambda n, m, val : 4 * val)
-#ampsNew = matrixMap(amps, lambda n, m, val : ((n+1)%(m+1)) * val)
+ampsNew = matrixMap(amps, lambda n, m, val : ((n+1)%(m+1)) * val)
 
 # Step 4: backtransform
 print "Backtransform"
