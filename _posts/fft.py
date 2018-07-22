@@ -64,6 +64,11 @@ class Entry:
         self.col = c
         self.val = val
 
+    def __str__(self):
+        return "[{},{}:{}]".format(self.row, self.col, self.val)
+
+    def __repr__(self):
+        return self.__str__()
 
 
 def getLargest(data, n):
@@ -77,13 +82,30 @@ def getLargest(data, n):
 def getLargestAmps(amps, n):
     lengths = amps[:,:,0]*amps[:,:,0] + amps[:,:,1]*amps[:,:,1] + amps[:,:,2]*amps[:,:,2] 
     largest = getLargest(lengths, n)
+    for l in largest:
+        l.val = amps[l.row, l.col]
     return largest
+
+def getLargestAmpsBiggerOne(amps, n):
+    lengths = amps[:,:,0]*amps[:,:,0] + amps[:,:,1]*amps[:,:,1] + amps[:,:,2]*amps[:,:,2] 
+    largest = Circle(n, Entry(-1,-1,-9999999999))
+    for r,row in enumerate(lengths):
+        for c,val in enumerate(row):
+            if r >= 1 and c >= 1:
+                entry = Entry(r,c,val)
+                largest.insertWhere((lambda other : entry.val > other.val),  entry)
+    out = largest.data
+    for l in out:
+        l.val = amps[l.row, l.col]
+    return out
+
 
 def getTopN(amps, n):
     largest = getLargestAmps(amps, n)
     largestIndices = list(map(lambda el : [el.row, el.col], largest))
     def indexInLargest(r,c,val):
         if [r,c] in largestIndices:
+            print("Keeping {},{}={}".format(r,c,val))
             return val
         else:
             return [0,0,0]
@@ -91,21 +113,20 @@ def getTopN(amps, n):
     return ampsNew
 
 
-def multipleOf(val1, val2):
-    if val1 == 0:
-        return False
-    elif val2 == 0:
-        return False
-    else:
-        return val1 % val2 == 0
-
-
 def addOctave(amps, n):
-    largest = getLargestAmps(amps, n)
+    largest = getLargestAmpsBiggerOne(amps, n)
+    print("Adding octave to values {}".format(largest))
+    def isMultipleOf(val1, val2):
+        if val1 <= 1:
+            return False
+        if val2 <= 1:
+            return False
+        return val1 % val2 == 0
     def indexMultipleOfLargest(r,c,val):
         valOut = val
         for li in largest:
-            if multipleOf(r, li.row) and multipleOf(c, li.col):
+            if isMultipleOf(r, li.row) and isMultipleOf(c, li.col):
+                print("{},{}={} is a multiple of {},{}={}".format(r,c,val,li.row,li.col,li.val))
                 valOut += li.val
         return valOut
     ampsNew = matrixMap(indexMultipleOfLargest, amps)
@@ -113,8 +134,10 @@ def addOctave(amps, n):
         
 
 def alter(amps):
-    return addOctave(amps, 4)
-    #return getTopN(amps, 1)
+    #filtered = getTopN(amps, 100)
+    highted = addOctave(amps, 4)
+    return highted
+
 
 def plotSamples(samples):
     fig = plt.figure()
@@ -135,9 +158,9 @@ def plotAmps(amps):
     plt.draw()
     
 
-spacing = 25
-thetas = np.linspace(0, 3*360.0, spacing)
-phis = np.linspace(0, 3*360.0, spacing)
+steps = 50
+thetas = np.linspace(0, 3*360.0, steps)
+phis = np.linspace(0, 3*360.0, steps)
 sample = getSample(thetas, phis)
 plotSamples(sample)
 amps = fft(sample)
@@ -147,3 +170,7 @@ plotAmps(ampsNew)
 sampleNew = ifft(ampsNew)
 plotSamples(sampleNew)
 plt.show()
+
+
+
+
