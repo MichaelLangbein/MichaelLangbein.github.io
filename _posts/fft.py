@@ -133,11 +133,29 @@ def addOctave(amps, n):
     return ampsNew
         
 
-def alter(amps):
-    #filtered = getTopN(amps, 100)
-    highted = addOctave(amps, 4)
-    return highted
+def doubleLines(amps, n):
+    numR, numC, numD = amps.shape
+    largest = getLargestAmpsBiggerOne(amps, n)
+    rows = list(map(lambda el: el.row, largest))
+    cols = list(map(lambda el: el.col, largest))
+    for row in rows:
+        amps[2*row%numR, :, :] += amps[row, :, :]
+    for col in cols:
+        amps[:, 2*col%numC, :] += amps[:, col, :]
+    return amps
 
+def addMidLine(amps):
+    numR, numC, numD = amps.shape
+    largest = getLargestAmpsBiggerOne(amps, 1)
+    r = largest[0].row
+    c = largest[0].col
+    amps[int(numR/2), :, :] = amps[r, :, :]
+    amps[:, int(numC/2), :] = amps[:, c, :]
+    return amps
+
+
+def alter(amps):
+    return addMidLine(amps)
 
 def plotSamples(samples):
     fig = plt.figure()
@@ -158,7 +176,7 @@ def plotAmps(amps):
     plt.draw()
     
 
-steps = 50
+steps = 45
 thetas = np.linspace(0, 3*360.0, steps)
 phis = np.linspace(0, 3*360.0, steps)
 sample = getSample(thetas, phis)
