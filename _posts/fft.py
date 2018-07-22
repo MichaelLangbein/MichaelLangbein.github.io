@@ -100,7 +100,7 @@ def getLargestAmpsBiggerOne(amps, n):
     return out
 
 
-def getTopN(amps, n):
+def retainTopN(amps, n):
     largest = getLargestAmps(amps, n)
     largestIndices = list(map(lambda el : [el.row, el.col], largest))
     def indexInLargest(r,c,val):
@@ -117,9 +117,9 @@ def addOctave(amps, n):
     largest = getLargestAmpsBiggerOne(amps, n)
     print("Adding octave to values {}".format(largest))
     def isMultipleOf(val1, val2):
-        if val1 <= 1:
+        if val1 <= 2:
             return False
-        if val2 <= 1:
+        if val2 <= 2:
             return False
         return val1 % val2 == 0
     def indexMultipleOfLargest(r,c,val):
@@ -155,7 +155,7 @@ def addMidLine(amps):
 
 
 def alter(amps):
-    return addMidLine(amps)
+    return doubleLines(amps, 3)
 
 def plotSamples(samples):
     fig = plt.figure()
@@ -176,7 +176,7 @@ def plotAmps(amps):
     plt.draw()
     
 
-steps = 45
+steps = 40
 thetas = np.linspace(0, 3*360.0, steps)
 phis = np.linspace(0, 3*360.0, steps)
 sample = getSample(thetas, phis)
