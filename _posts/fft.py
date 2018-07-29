@@ -38,6 +38,16 @@ def matrixMap(mapFunc, matrix):
             matrixNew[r,c] = mapFunc(r,c,el)
     return matrixNew
 
+
+def matrixFilter(filterFunc, matrix):
+    matrixNew = np.zeros(matrix.shape, dtype=matrix.dtype)
+    for r,row in enumerate(matrix):
+        for c,el in enumerate(row):
+            if filterFunc(r,c,el):
+                matrixNew[r,c] = matrix[r,c]
+    return matrixNew
+
+
 class Circle:
     
     def __init__(self, n, initial):
@@ -112,6 +122,25 @@ def retainTopN(amps, n):
     ampsNew = matrixMap(indexInLargest, amps)
     return ampsNew
 
+def retainHighestLines(amps, nx,ny,nz):
+    ampsNew = np.zeros(amps.shape, dtype=amps.dtype)
+    ampsNew[:,:,0] = retainHighestLinesSingle(amps[:,:,0], nx)
+    ampsNew[:,:,1] = retainHighestLinesSingle(amps[:,:,1], ny)
+    ampsNew[:,:,2] = retainHighestLinesSingle(amps[:,:,2], nz)
+    return ampsNew
+
+def retainHighestLinesSingle(amps, n):
+    largest = getLargest(amps, n)
+    print(largest)
+    def simplify(r,c,val):
+        for l in largest:
+            if r == l.row or c == l.col:
+                return l.val
+            else:
+                return 0
+    ampsNew = matrixMap(simplify, amps)
+    return ampsNew
+
 
 def addOctave(amps, n):
     largest = getLargestAmpsBiggerOne(amps, n)
@@ -155,7 +184,10 @@ def addMidLine(amps):
 
 
 def alter(amps):
-    return doubleLines(amps, 3)
+    ampsFiltered = retainHighestLines(amps, 2,2,1)
+    ampsNew = ampsFiltered # doubleLines(ampsFiltered, 2)
+    return ampsNew
+
 
 def plotSamples(samples):
     fig = plt.figure()
@@ -181,11 +213,13 @@ thetas = np.linspace(0, 3*360.0, steps)
 phis = np.linspace(0, 3*360.0, steps)
 sample = getSample(thetas, phis)
 plotSamples(sample)
+plotAmps(sample)
 amps = fft(sample)
 plotAmps(amps)
 ampsNew = alter(amps)
 plotAmps(ampsNew)
 sampleNew = ifft(ampsNew)
+plotAmps(sampleNew)
 plotSamples(sampleNew)
 plt.show()
 
