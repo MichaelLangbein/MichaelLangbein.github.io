@@ -83,15 +83,24 @@ class Entry:
 
 def getLargest(data, n):
     largest = Circle(n, Entry(-1,-1,-9999999999))
+    for r,val in enumerate(data):
+        entry = Entry(r,None,val)
+        largest.insertWhere((lambda other : entry.val > other.val),  entry)
+    return largest.data
+
+
+def getLargestM(data, n):
+    largest = Circle(n, Entry(-1,-1,-9999999999))
     for r,row in enumerate(data):
         for c,val in enumerate(row):
             entry = Entry(r,c,val)
             largest.insertWhere((lambda other : entry.val > other.val),  entry)
     return largest.data
 
+
 def getLargestAmps(amps, n):
     lengths = amps[:,:,0]*amps[:,:,0] + amps[:,:,1]*amps[:,:,1] + amps[:,:,2]*amps[:,:,2] 
-    largest = getLargest(lengths, n)
+    largest = getLargestM(lengths, n)
     for l in largest:
         l.val = amps[l.row, l.col]
     return largest
@@ -122,22 +131,28 @@ def retainTopN(amps, n):
     ampsNew = matrixMap(indexInLargest, amps)
     return ampsNew
 
-def retainHighestLines(amps, nx,ny,nz):
+
+
+def retainHighestLines(amps, nxr, nxc, nyr, nyc, nzr, nzc):
     ampsNew = np.zeros(amps.shape, dtype=amps.dtype)
-    ampsNew[:,:,0] = retainHighestLinesSingle(amps[:,:,0], nx)
-    ampsNew[:,:,1] = retainHighestLinesSingle(amps[:,:,1], ny)
-    ampsNew[:,:,2] = retainHighestLinesSingle(amps[:,:,2], nz)
+    ampsNew[:,:,0] = retainHighestLinesSingle(amps[:,:,0], nxr, nxc)
+    ampsNew[:,:,1] = retainHighestLinesSingle(amps[:,:,1], nyr, nyc)
+    ampsNew[:,:,2] = retainHighestLinesSingle(amps[:,:,2], nzr, nzc)
     return ampsNew
 
-def retainHighestLinesSingle(amps, n):
-    largest = getLargest(amps, n)
-    print(largest)
+def retainHighestLinesSingle(amps, nRows, nCols):
+    rowsCuml = amps.sum(axis=1)
+    largestRows = getLargest(rowsCuml, nRows)
+    colsCuml = amps.sum(axis=0)
+    largestCols = getLargest(colsCuml, nCols)
     def simplify(r,c,val):
-        for l in largest:
-            if r == l.row or c == l.col:
-                return l.val
-            else:
-                return 0
+        for lr in largestRows:
+            if r == lr.row:
+                return lr.val
+        for lc in largestCols:
+            if c == lc.row:
+                return lc.val
+        return 0.0
     ampsNew = matrixMap(simplify, amps)
     return ampsNew
 
@@ -184,7 +199,7 @@ def addMidLine(amps):
 
 
 def alter(amps):
-    ampsFiltered = retainHighestLines(amps, 2,2,1)
+    ampsFiltered = retainHighestLines(amps, 2,2, 2,2, 1,0)
     ampsNew = ampsFiltered # doubleLines(ampsFiltered, 2)
     return ampsNew
 
@@ -208,9 +223,11 @@ def plotAmps(amps):
     plt.draw()
     
 
-steps = 40
-thetas = np.linspace(0, 3*360.0, steps)
-phis = np.linspace(0, 3*360.0, steps)
+steps = 40.0
+target = 3*360.0
+delta = target / steps
+thetas = np.linspace(0, target, steps)
+phis = np.linspace(0, target, steps)
 sample = getSample(thetas, phis)
 plotSamples(sample)
 plotAmps(sample)
