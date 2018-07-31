@@ -26,9 +26,9 @@ def fft(samples):
 
 def ifft(amps):
     samples = np.zeros(np.shape(amps))
-    samples[:,:,0] = np.fft.ifft2(amps[:,:,0])
-    samples[:,:,1] = np.fft.ifft2(amps[:,:,1])
-    samples[:,:,2] = np.fft.ifft2(amps[:,:,2])
+    samples[:,:,0] = np.abs(np.fft.ifft2(amps[:,:,0]))
+    samples[:,:,1] = np.abs(np.fft.ifft2(amps[:,:,1]))
+    samples[:,:,2] = np.abs(np.fft.ifft2(amps[:,:,2]))
     return samples
 
 def matrixMap(mapFunc, matrix):
@@ -83,14 +83,6 @@ class Entry:
 
 def getLargest(data, n):
     largest = Circle(n, Entry(-1,-1,-9999999999))
-    for r,val in enumerate(data):
-        entry = Entry(r,None,val)
-        largest.insertWhere((lambda other : np.abs(entry.val) > np.abs(other.val)),  entry)
-    return largest.data
-
-
-def getLargestM(data, n):
-    largest = Circle(n, Entry(-1,-1,-9999999999))
     for r,row in enumerate(data):
         for c,val in enumerate(row):
             entry = Entry(r,c,val)
@@ -100,19 +92,51 @@ def getLargestM(data, n):
 
 def getLargestAmps(amps, n):
     lengths = amps[:,:,0]*amps[:,:,0] + amps[:,:,1]*amps[:,:,1] + amps[:,:,2]*amps[:,:,2] 
-    largest = getLargestM(lengths, n)
+    largest = getLargest(lengths, n)
     for l in largest:
         l.val = amps[l.row, l.col]
     return largest
 
+
+def indexOf(val, arr):
+    indx = 0
+    minDist = 9999999999
+    for i, el in enumerate(arr):
+        dist = abs(val - el)
+        if dist < minDist:
+            indx = i
+            minDist = dist
+    return indx
+
+
+def addOctave(amps):
+    ampsNew = np.zeros(amps.shape, dtype=amps.dtype)
+    ampsNew[:,:,0] = addOctaveSingle(amps[:,:,0])
+    ampsNew[:,:,1] = addOctaveSingle(amps[:,:,1])
+    ampsNew[:,:,2] = addOctaveSingle(amps[:,:,2])
+    return ampsNew
+
+
+def addOctaveSingle(amps):
+    ampsNew = np.zeros(amps.shape, dtype=amps.dtype)
+    R,C = ampsNew.shape
+    frqR = np.fft.fftfreq(R, d=delta)
+    frqC = np.fft.fftfreq(C, d=delta)
+    for r in range(R):
+        for c in range(C):
+            fr = frqR[r]
+            fc = frqC[c]
+            r2 = indexOf(2*fr, frqR)
+            c2 = indexOf(2*fc, frqC)
+            ampsNew[r ,c ] += amps[r,c]
+            ampsNew[r ,c2] += amps[r,c]
+            ampsNew[r2,c ] += amps[r,c]
+            #ampsNew[r2,c2] += amps[r,c]
+    return ampsNew
+
+
 def alter(amps):
-    ampsNew = np.copy(amps)
-    ampsNew[ 8, :,0:2] += amps[16, :,0:2]
-    ampsNew[32, :,0:2] += amps[24, :,0:2]
-    ampsNew[ :, 8,0:2] += amps[ :,16,0:2]
-    ampsNew[ :,32,0:2] += amps[ :,24,0:2]
-    ampsNew[ 0, 8,  2] += amps[ 0,16,  2]
-    ampsNew[ 0,32,  2] += amps[ 0,24,  2]
+    ampsNew = addOctave(amps)
     return ampsNew
 
 
@@ -121,17 +145,18 @@ def plotSamples(samples):
     ax = fig.gca(projection='3d')
     for row in samples:
         for item in row:
-            ax.scatter(item[0],item[1],item[2])
+            if item[0] > 0 and item[1] > 0 and item[2] > 0:
+                ax.scatter(item[0],item[1],item[2])
     plt.draw()
     
 def plotAmps(amps):
     fig = plt.figure()
     ax0 = fig.add_subplot(131)
-    ax0.imshow((np.abs(amps[:,:,0])+0.0001))
+    ax0.imshow(np.abs(amps[:,:,0]))
     ax1 = fig.add_subplot(132)
-    ax1.imshow((np.abs(amps[:,:,1])+0.0001))
+    ax1.imshow(np.abs(amps[:,:,1]))
     ax2 = fig.add_subplot(133)
-    ax2.imshow((np.abs(amps[:,:,2])+0.0001))
+    ax2.imshow(np.abs(amps[:,:,2]))
     plt.draw()
 
     
