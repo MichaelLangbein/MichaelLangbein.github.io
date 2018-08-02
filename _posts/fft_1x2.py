@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import gridspec
 
-r1 = 2
+r1 = 3
 r2 = 1
 def body(t):
     x = r1 * np.cos(t)
@@ -25,87 +25,10 @@ def fft(samples):
     return amps
 
 def ifft(amps):
-    samples = np.zeros(np.shape(amps))
+    samples = np.zeros(np.shape(amps), dtype=amps.dtype)
     samples[:,0] = np.fft.ifft(amps[:,0])
     samples[:,1] = np.fft.ifft(amps[:,1])
-    return samples
-
-def matrixMap(mapFunc, matrix):
-    matrixNew = np.zeros(matrix.shape, dtype=matrix.dtype)
-    for r,row in enumerate(matrix):
-        for c,el in enumerate(row):
-            matrixNew[r,c] = mapFunc(r,c,el)
-    return matrixNew
-
-
-def matrixFilter(filterFunc, matrix):
-    matrixNew = np.zeros(matrix.shape, dtype=matrix.dtype)
-    for r,row in enumerate(matrix):
-        for c,el in enumerate(row):
-            if filterFunc(r,c,el):
-                matrixNew[r,c] = matrix[r,c]
-    return matrixNew
-
-
-class Circle:
-    
-    def __init__(self, n, initial):
-        self.length = n
-        self.data = np.zeros(n, dtype=object)
-        for i in range(self.length):
-            self.data[i] = initial
-    
-    def insertAt(self, index, value):
-        for i in range(self.length-1, index-1, -1):
-            self.data[i] = self.data[i-1]
-        self.data[index] = value
-
-    def insertWhere(self, func, value):
-        for i in range(self.length):
-            if func(self.data[i]):
-                self.insertAt(i, value)
-                break
-
-class Entry:
-
-    def __init__(self, r, c, val):
-        self.row = r
-        self.col = c
-        self.val = val
-
-    def __str__(self):
-        return "[{},{}:{}]".format(self.row, self.col, self.val)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-def getLargest(data, n):
-    largest = Circle(n, Entry(-1,-1,-9999999999))
-    for r,row in enumerate(data):
-        for c,val in enumerate(row):
-            entry = Entry(r,c,val)
-            largest.insertWhere((lambda other : entry.val > other.val),  entry)
-    return largest.data
-
-
-def getLargestAmps(amps, n):
-    lengths = amps[:,:,0]*amps[:,:,0] + amps[:,:,1]*amps[:,:,1] + amps[:,:,2]*amps[:,:,2] 
-    largest = getLargest(lengths, n)
-    for l in largest:
-        l.val = amps[l.row, l.col]
-    return largest
-
-
-def indexOf(val, arr):
-    indx = 0
-    minDist = 9999999999
-    for i, el in enumerate(arr):
-        dist = abs(val - el)
-        if dist < minDist:
-            indx = i
-            minDist = dist
-    return indx
+    return np.real(samples)
 
 
 def addOctave(amps):
@@ -114,21 +37,38 @@ def addOctave(amps):
     ampsNew[:,1] = addOctaveSingle(amps[:,1])
     return ampsNew
 
-
 def addOctaveSingle(amps):
     ampsNew = np.zeros(amps.shape, dtype=amps.dtype)
     R = len(amps)
-    frqR = np.fft.fftfreq(R, d=delta)
-    for r in range(R):
-            fr = frqR[r]
-            r2 = indexOf(2*fr, frqR)
-            ampsNew[r] += amps[r]
-            ampsNew[r2] += amps[r]
+    for r, val in enumerate(amps):
+        ampsNew[r] += val
+        if r < R//4:
+            r2 = 2*r
+            ampsNew[r2] += val
+        elif r > (3.0 * R // 4):
+            dist = R-r
+            r2 = R-(2*dist)
+            ampsNew[r2] += val
     return ampsNew
+
+def filterAmps(amps, perc):
+    ampsF = np.zeros(amps.shape, dtype=amps.dtype)
+    ampsF[:,0] = filterAmpsSingle(amps[:,0], perc)
+    ampsF[:,1] = filterAmpsSingle(amps[:,1], perc)
+    return ampsF
+
+def filterAmpsSingle(amps, perc):
+    ampsF = np.zeros(amps.shape, dtype=amps.dtype)
+    thrsh = np.max(np.abs(amps)) * perc
+    for r, val in enumerate(amps):
+        if np.abs(val) > thrsh:
+            ampsF[r] = val
+    return ampsF
 
 
 def alter(amps):
-    ampsNew = addOctave(amps)
+    ampsF = filterAmps(amps, 0.5)
+    ampsNew = addOctave(ampsF)
     return ampsNew
 
 
@@ -142,9 +82,9 @@ def plotAmps(amps):
     N = len(amps)
     fig = plt.figure()
     ax0 = fig.add_subplot(121)
-    ax0.scatter(np.fft.fftfreq(N, d=delta), amps[:,0])
+    ax0.plot(np.fft.fftfreq(N, d=delta), np.abs(amps[:,0]))
     ax1 = fig.add_subplot(122)
-    ax1.scatter(np.fft.fftfreq(N, d=delta), amps[:,1])
+    ax1.plot(np.fft.fftfreq(N, d=delta), np.abs(amps[:,1]))
     plt.draw()
 
     
@@ -154,14 +94,12 @@ target = 2*360.0
 delta = target / steps
 ts = np.linspace(0, target, steps)
 sample = getSample(ts)
-print sample
 plotSamples(sample)
 amps = fft(sample)
 plotAmps(amps)
 ampsNew = alter(amps)
 plotAmps(ampsNew)
 sampleNew = ifft(ampsNew)
-#sampleNew = getAnalyticalSollution(thetas, phis)
 plotSamples(sampleNew)
 plt.show()
 
