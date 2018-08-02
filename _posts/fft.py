@@ -26,10 +26,10 @@ def fft(samples):
 
 def ifft(amps):
     samples = np.zeros(np.shape(amps))
-    samples[:,:,0] = np.abs(np.fft.ifft2(amps[:,:,0]))
-    samples[:,:,1] = np.abs(np.fft.ifft2(amps[:,:,1]))
-    samples[:,:,2] = np.abs(np.fft.ifft2(amps[:,:,2]))
-    return samples
+    samples[:,:,0] = np.fft.ifft2(amps[:,:,0])
+    samples[:,:,1] = np.fft.ifft2(amps[:,:,1])
+    samples[:,:,2] = np.fft.ifft2(amps[:,:,2])
+    return np.real(samples)
 
 def matrixMap(mapFunc, matrix):
     matrixNew = np.zeros(matrix.shape, dtype=matrix.dtype)
@@ -46,67 +46,6 @@ def matrixFilter(filterFunc, matrix):
             if filterFunc(r,c,el):
                 matrixNew[r,c] = matrix[r,c]
     return matrixNew
-
-
-class Circle:
-    
-    def __init__(self, n, initial):
-        self.length = n
-        self.data = np.zeros(n, dtype=object)
-        for i in range(self.length):
-            self.data[i] = initial
-    
-    def insertAt(self, index, value):
-        for i in range(self.length-1, index-1, -1):
-            self.data[i] = self.data[i-1]
-        self.data[index] = value
-
-    def insertWhere(self, func, value):
-        for i in range(self.length):
-            if func(self.data[i]):
-                self.insertAt(i, value)
-                break
-
-class Entry:
-
-    def __init__(self, r, c, val):
-        self.row = r
-        self.col = c
-        self.val = val
-
-    def __str__(self):
-        return "[{},{}:{}]".format(self.row, self.col, self.val)
-
-    def __repr__(self):
-        return self.__str__()
-
-
-def getLargest(data, n):
-    largest = Circle(n, Entry(-1,-1,-9999999999))
-    for r,row in enumerate(data):
-        for c,val in enumerate(row):
-            entry = Entry(r,c,val)
-            largest.insertWhere((lambda other : entry.val > other.val),  entry)
-    return largest.data
-
-
-def getLargestAmps(amps, n):
-    lengths = amps[:,:,0]*amps[:,:,0] + amps[:,:,1]*amps[:,:,1] + amps[:,:,2]*amps[:,:,2] 
-    largest = getLargest(lengths, n)
-    for l in largest:
-        l.val = amps[l.row, l.col]
-    return largest
-
-
-def indexOf(val, arr):
-    indx = 0
-    minDist = 9999999999
-    for i, el in enumerate(arr):
-        dist = abs(val - el)
-        if dist < minDist:
-            indx = i
-            minDist = dist
-    return indx
 
 
 def addOctave(amps):
@@ -128,15 +67,43 @@ def addOctaveSingle(amps):
             fc = frqC[c]
             r2 = indexOf(2*fr, frqR)
             c2 = indexOf(2*fc, frqC)
-            ampsNew[r ,c ] += amps[r,c]
-            ampsNew[r ,c2] += amps[r,c]
-            ampsNew[r2,c ] += amps[r,c]
-            #ampsNew[r2,c2] += amps[r,c]
+            ampsNew[r,c] += amps[r,c]
+            #ampsNew[r ,c2] += amps[r,c]
+            #ampsNew[r2,c ] += amps[r,c]
+            if r2 is not None and c2 is not None:
+                fr2 = frqR[r2]
+                fc2 = frqC[c2]
+                #print("found double of {}:{}/{}:{} at {}:{}/{}:{}".format(r,fr,c,fc,r2,fr2,c2,fc2))
+                ampsNew[r2,c2] += amps[r,c]
     return ampsNew
 
+def indexOf(val, arr, maxDist=0.001, minDist=9999999999):
+    indx = 0
+    for i, el in enumerate(arr):
+        dist = abs(val - el)
+        if dist < minDist:
+            indx = i
+            minDist = dist
+    if minDist < maxDist:
+        return indx
+    return None
+    
+
+def filterAmps(amps, perc):
+    ampsNew = np.zeros(amps.shape, dtype=amps.dtype)
+    ampsNew[:,:,0] = filterAmpsSingle(amps[:,:,0], perc)
+    ampsNew[:,:,1] = filterAmpsSingle(amps[:,:,1], perc)
+    ampsNew[:,:,2] = filterAmpsSingle(amps[:,:,2], perc)
+    return ampsNew
+
+def filterAmpsSingle(amps, perc):
+    thresh = np.max(np.abs(amps)) * perc
+    ampsNew = matrixFilter(lambda r,c,val: np.abs(val) > thresh, amps)
+    return ampsNew
 
 def alter(amps):
-    ampsNew = addOctave(amps)
+    ampsF = filterAmps(amps, 0.9)
+    ampsNew = addOctave(ampsF)
     return ampsNew
 
 
