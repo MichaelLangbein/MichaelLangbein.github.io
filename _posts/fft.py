@@ -5,12 +5,26 @@ from matplotlib import gridspec
 
 r1 = r2 = r3 = 1
 def body(theta, phi):
-    x = r1 * np.cos(theta) * np.sin(phi)
-    y = r2 * np.sin(theta) * np.sin(phi)
-    z = r3 * np.cos(phi)
+    x = r1 * np.cos(theta) * np.cos(phi)
+    y = r2 * np.cos(theta) * np.sin(phi)
+    z = r3 * np.sin(theta)
     return [x, y, z]
 
-def getSample(thetas, phis):
+def bodyOctave(theta, phi):
+    x = r1 * np.cos(theta) * np.cos(phi) + r1 * np.cos(2*theta) * np.cos(2*phi)
+    y = r2 * np.cos(theta) * np.sin(phi) + r2 * np.cos(2*theta) * np.sin(2*phi)
+    z = r3 * np.sin(theta) + r3 * np.sin(2*theta)
+    return [x, y, z]
+
+
+def newBody(theta, phi):
+    x = r1 * np.sin(theta) - np.cos(phi)
+    y = r2 * np.sin(theta) * np.cos(phi)
+    z = r3 * np.cos(theta) - np.sin(phi)
+    return [x, y, z]
+
+
+def getSample(thetas, phis, body):
     samples = np.zeros((len(thetas), len(phis), 3))
     for r, theta in enumerate(thetas):
         for c, phi in enumerate(phis):
@@ -25,7 +39,7 @@ def fft(samples):
     return amps
 
 def ifft(amps):
-    samples = np.zeros(np.shape(amps))
+    samples = np.zeros(np.shape(amps), dtype=amps.dtype)
     samples[:,:,0] = np.fft.ifft2(amps[:,:,0])
     samples[:,:,1] = np.fft.ifft2(amps[:,:,1])
     samples[:,:,2] = np.fft.ifft2(amps[:,:,2])
@@ -78,6 +92,8 @@ def addOctaveSingle(amps):
             ampsNew[r,c] += amps[r,c]
             if r2 is not None and c2 is not None:
                 ampsNew[r2,c2] += amps[r,c]
+                if amps[r,c] != 0.0:
+                    print "duplicating value {} from {}/{} to {}/{}".format(amps[r,c], r,c, r2,c2) 
     return ampsNew
 
     
@@ -91,11 +107,16 @@ def filterAmps(amps, perc):
 
 def filterAmpsSingle(amps, perc):
     thresh = np.max(np.abs(amps)) * perc
-    ampsNew = matrixFilter(lambda r,c,val: np.abs(val) > thresh, amps)
+    def filterfunc(r, c, val):
+        if np.abs(val) > thresh:
+            print "retaining {} at {}/{}".format(val, r, c)
+            return True
+        return False
+    ampsNew = matrixFilter(filterfunc, amps)
     return ampsNew
 
 def alter(amps):
-    ampsF = filterAmps(amps, 0.99)
+    ampsF = filterAmps(amps, 0.9)
     ampsNew = addOctave(ampsF)
     return ampsNew
 
@@ -105,7 +126,7 @@ def plotSamples(samples):
     ax = fig.gca(projection='3d')
     for row in samples:
         for item in row:
-            if item[0] > 0 and item[1] > 0 and item[2] > 0:
+            if True: #item[0] > 0 and item[1] > 0 and item[2] > 0:
                 ax.scatter(item[0],item[1],item[2])
     plt.draw()
     
@@ -121,12 +142,12 @@ def plotAmps(amps):
 
     
 
-steps = 300.0
+steps = 240.0
 target = 360.0
 delta = target / steps
 thetas = np.linspace(0, target, steps)
 phis = np.linspace(0, target, steps)
-sample = getSample(thetas, phis)
+sample = getSample(thetas, phis, newBody)
 plotSamples(sample)
 amps = fft(sample)
 plotAmps(amps)
@@ -134,24 +155,8 @@ ampsNew = alter(amps)
 plotAmps(ampsNew)
 sampleNew = ifft(ampsNew)
 plotSamples(sampleNew)
-
-ampsAnaly = np.zeros(amps.shape, dtype=amps.dtype)
-ampsAnaly[58,58,0:2] = 1
-ampsAnaly[58,243,0:2] = 1
-ampsAnaly[243,58,0:2] = 1
-ampsAnaly[243,243,0:2] = 1
-ampsAnaly[0,58,2] = 1
-ampsAnaly[0,243,2] = 1
-
-ampsAnaly[116,116,0:2] = 1
-ampsAnaly[116,184,0:2] = 1
-ampsAnaly[184,116,0:2] = 1
-ampsAnaly[184,184,0:2] = 1
-ampsAnaly[0,116,2] = 1
-ampsAnaly[0,184,2] = 1
-
-samplesNewAnaly = ifft(ampsAnaly)
-plotSamples(samplesNewAnaly)
+#samplesAnaly = getSample(thetas, phis, bodyOctave)
+#plotSamples(samplesAnaly)
 
 plt.show()
 
