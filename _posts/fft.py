@@ -63,30 +63,23 @@ def addOctaveSingle(amps):
     frqC = np.fft.fftfreq(C, d=delta)
     for r in range(R):
         for c in range(C):
-            fr = frqR[r]
-            fc = frqC[c]
-            r2 = indexOf(2*fr, frqR)
-            c2 = indexOf(2*fc, frqC)
+            if r < R/4.0:
+                r2 = 2*r
+            elif r > 3.0*R/4.0:
+                r2 = 2*r - R
+            else:
+                r2 = None
+            if c < C/4.0:
+                c2 = 2*c
+            elif c > 3.0*C/4.0:
+                c2 = 2*c - C
+            else:
+                c2 = None
             ampsNew[r,c] += amps[r,c]
-            #ampsNew[r ,c2] += amps[r,c]
-            #ampsNew[r2,c ] += amps[r,c]
             if r2 is not None and c2 is not None:
-                fr2 = frqR[r2]
-                fc2 = frqC[c2]
-                #print("found double of {}:{}/{}:{} at {}:{}/{}:{}".format(r,fr,c,fc,r2,fr2,c2,fc2))
                 ampsNew[r2,c2] += amps[r,c]
     return ampsNew
 
-def indexOf(val, arr, maxDist=0.001, minDist=9999999999):
-    indx = 0
-    for i, el in enumerate(arr):
-        dist = abs(val - el)
-        if dist < minDist:
-            indx = i
-            minDist = dist
-    if minDist < maxDist:
-        return indx
-    return None
     
 
 def filterAmps(amps, perc):
@@ -102,7 +95,7 @@ def filterAmpsSingle(amps, perc):
     return ampsNew
 
 def alter(amps):
-    ampsF = filterAmps(amps, 0.9)
+    ampsF = filterAmps(amps, 0.99)
     ampsNew = addOctave(ampsF)
     return ampsNew
 
@@ -119,17 +112,17 @@ def plotSamples(samples):
 def plotAmps(amps):
     fig = plt.figure()
     ax0 = fig.add_subplot(131)
-    ax0.imshow(np.abs(amps[:,:,0]))
+    ax0.imshow(np.log(np.abs(amps[:,:,0])+0.000001))
     ax1 = fig.add_subplot(132)
-    ax1.imshow(np.abs(amps[:,:,1]))
+    ax1.imshow(np.log(np.abs(amps[:,:,1])+0.000001))
     ax2 = fig.add_subplot(133)
-    ax2.imshow(np.abs(amps[:,:,2]))
+    ax2.imshow(np.log(np.abs(amps[:,:,2])+0.000001))
     plt.draw()
 
     
 
-steps = 40.0
-target = 3*360.0
+steps = 300.0
+target = 360.0
 delta = target / steps
 thetas = np.linspace(0, target, steps)
 phis = np.linspace(0, target, steps)
@@ -141,6 +134,25 @@ ampsNew = alter(amps)
 plotAmps(ampsNew)
 sampleNew = ifft(ampsNew)
 plotSamples(sampleNew)
+
+ampsAnaly = np.zeros(amps.shape, dtype=amps.dtype)
+ampsAnaly[58,58,0:2] = 1
+ampsAnaly[58,243,0:2] = 1
+ampsAnaly[243,58,0:2] = 1
+ampsAnaly[243,243,0:2] = 1
+ampsAnaly[0,58,2] = 1
+ampsAnaly[0,243,2] = 1
+
+ampsAnaly[116,116,0:2] = 1
+ampsAnaly[116,184,0:2] = 1
+ampsAnaly[184,116,0:2] = 1
+ampsAnaly[184,184,0:2] = 1
+ampsAnaly[0,116,2] = 1
+ampsAnaly[0,184,2] = 1
+
+samplesNewAnaly = ifft(ampsAnaly)
+plotSamples(samplesNewAnaly)
+
 plt.show()
 
 
