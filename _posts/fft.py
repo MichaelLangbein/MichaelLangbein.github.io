@@ -121,17 +121,20 @@ def alter(amps):
 
 
 def plotSamples(samples, name):
+    def filterFunc(r,c,v):
+        return v[0]>0 and v[1]>0 and v[2]>0
+    samplesFiltered = matrixFilter(filterFunc, samples)
     fig = mm.figure(name)
-    x = samples[:,:,0]
-    y = samples[:,:,1]
-    z = samples[:,:,2]
+    x = samplesFiltered[:,:,0]
+    y = samplesFiltered[:,:,1]
+    z = samplesFiltered[:,:,2]
     mm.points3d(x, y, z, figure=fig)
     
 def plotAmps(amps, name):
     fig = mm.figure(name)
-    mm.imshow(np.log(np.abs(amps[:,:,0])+0.000001), figure=fig)
-    mm.imshow(np.log(np.abs(amps[:,:,1])+0.000001), figure=fig)
-    mm.imshow(np.log(np.abs(amps[:,:,2])+0.000001), figure=fig)
+    mm.imshow(np.log(np.abs(amps[:,:,0])+0.000001), figure=fig,  colormap='gist_earth')
+    mm.imshow(np.log(np.abs(amps[:,:,1])+0.000001), figure=fig,  colormap='gist_earth')
+    mm.imshow(np.log(np.abs(amps[:,:,2])+0.000001), figure=fig,  colormap='gist_earth')
 
     
 
@@ -140,7 +143,7 @@ target = 360.0
 delta = target / steps
 thetas = np.linspace(0, target, steps)
 phis = np.linspace(0, target, steps)
-sample = getSample(thetas, phis, newBody)
+sample = getSample(thetas, phis, body)
 plotSamples(sample, "sample")
 amps = fft(sample)
 plotAmps(amps, "amps")
