@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import mayavi.mlab as mm
 
 
@@ -131,10 +132,14 @@ def plotSamples(samples, name):
     mm.points3d(x, y, z, figure=fig)
     
 def plotAmps(amps, name):
-    fig = mm.figure(name)
-    mm.imshow(np.log(np.abs(amps[:,:,0])+0.000001), figure=fig,  colormap='gist_earth')
-    mm.imshow(np.log(np.abs(amps[:,:,1])+0.000001), figure=fig,  colormap='gist_earth')
-    mm.imshow(np.log(np.abs(amps[:,:,2])+0.000001), figure=fig,  colormap='gist_earth')
+    fig = plt.figure()
+    ax0 = fig.add_subplot(131)
+    ax0.imshow(np.log(np.abs(amps[:,:,0])+0.000001))
+    ax1 = fig.add_subplot(132)
+    ax1.imshow(np.log(np.abs(amps[:,:,1])+0.000001))
+    ax2 = fig.add_subplot(133)
+    ax2.imshow(np.log(np.abs(amps[:,:,2])+0.000001))
+    plt.draw()
 
     
 
@@ -154,4 +159,5 @@ plotSamples(sampleNew, "sampleNew")
 #samplesAnaly = getSample(thetas, phis, bodyOctave)
 #lotSamples(samplesAnaly)
 
+plt.show()
 mm.show()
