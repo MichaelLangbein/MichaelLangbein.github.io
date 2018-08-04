@@ -129,7 +129,8 @@ def plotSamples(samples, name):
     x = samplesFiltered[:,:,0]
     y = samplesFiltered[:,:,1]
     z = samplesFiltered[:,:,2]
-    mm.points3d(x, y, z, figure=fig)
+    s = x*x + y*y + z*z
+    mm.points3d(x, y, z, s, colormap="copper",  figure=fig)
     
 def plotAmps(amps, name):
     fig = plt.figure()
@@ -148,7 +149,7 @@ target = 360.0
 delta = target / steps
 thetas = np.linspace(0, target, steps)
 phis = np.linspace(0, target, steps)
-sample = getSample(thetas, phis, body)
+sample = getSample(thetas, phis, bodyOctave)
 plotSamples(sample, "sample")
 amps = fft(sample)
 plotAmps(amps, "amps")
@@ -156,8 +157,8 @@ ampsNew = alter(amps)
 plotAmps(ampsNew, "ampsNew")
 sampleNew = ifft(ampsNew)
 plotSamples(sampleNew, "sampleNew")
-#samplesAnaly = getSample(thetas, phis, bodyOctave)
-#lotSamples(samplesAnaly)
+samplesAnaly = getSample(thetas, phis, bodyOctave)
+lotSamples(samplesAnaly)
 
 plt.show()
 mm.show()
