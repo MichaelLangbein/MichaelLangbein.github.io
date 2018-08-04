@@ -1,7 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import gridspec
+import mayavi.mlab as mm
+
 
 r1 = r2 = r3 = 1
 def body(theta, phi):
@@ -93,7 +92,7 @@ def addOctaveSingle(amps):
             if r2 is not None and c2 is not None:
                 ampsNew[r2,c2] += amps[r,c]
                 if amps[r,c] != 0.0:
-                    print "duplicating value {} from {}/{} to {}/{}".format(amps[r,c], r,c, r2,c2) 
+                    print("duplicating value {} from {}/{} to {}/{}".format(amps[r,c], r,c, r2,c2))
     return ampsNew
 
     
@@ -109,57 +108,47 @@ def filterAmpsSingle(amps, perc):
     thresh = np.max(np.abs(amps)) * perc
     def filterfunc(r, c, val):
         if np.abs(val) > thresh:
-            print "retaining {} at {}/{}".format(val, r, c)
+            print("retaining {} at {}/{}".format(val, r, c))
             return True
         return False
     ampsNew = matrixFilter(filterfunc, amps)
     return ampsNew
 
 def alter(amps):
-    ampsF = filterAmps(amps, 0.9)
+    ampsF = filterAmps(amps, 0.96)
     ampsNew = addOctave(ampsF)
     return ampsNew
 
 
-def plotSamples(samples):
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    for row in samples:
-        for item in row:
-            if True: #item[0] > 0 and item[1] > 0 and item[2] > 0:
-                ax.scatter(item[0],item[1],item[2])
-    plt.draw()
+def plotSamples(samples, name):
+    fig = mm.figure(name)
+    x = samples[:,:,0]
+    y = samples[:,:,1]
+    z = samples[:,:,2]
+    mm.points3d(x, y, z, figure=fig)
     
-def plotAmps(amps):
-    fig = plt.figure()
-    ax0 = fig.add_subplot(131)
-    ax0.imshow(np.log(np.abs(amps[:,:,0])+0.000001))
-    ax1 = fig.add_subplot(132)
-    ax1.imshow(np.log(np.abs(amps[:,:,1])+0.000001))
-    ax2 = fig.add_subplot(133)
-    ax2.imshow(np.log(np.abs(amps[:,:,2])+0.000001))
-    plt.draw()
+def plotAmps(amps, name):
+    fig = mm.figure(name)
+    mm.imshow(np.log(np.abs(amps[:,:,0])+0.000001), figure=fig)
+    mm.imshow(np.log(np.abs(amps[:,:,1])+0.000001), figure=fig)
+    mm.imshow(np.log(np.abs(amps[:,:,2])+0.000001), figure=fig)
 
     
 
-steps = 240.0
+steps = 250.0
 target = 360.0
 delta = target / steps
 thetas = np.linspace(0, target, steps)
 phis = np.linspace(0, target, steps)
 sample = getSample(thetas, phis, newBody)
-plotSamples(sample)
+plotSamples(sample, "sample")
 amps = fft(sample)
-plotAmps(amps)
+plotAmps(amps, "amps")
 ampsNew = alter(amps)
-plotAmps(ampsNew)
+plotAmps(ampsNew, "ampsNew")
 sampleNew = ifft(ampsNew)
-plotSamples(sampleNew)
+plotSamples(sampleNew, "sampleNew")
 #samplesAnaly = getSample(thetas, phis, bodyOctave)
-#plotSamples(samplesAnaly)
+#lotSamples(samplesAnaly)
 
-plt.show()
-
-
-
-
+mm.show()
